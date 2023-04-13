@@ -5,6 +5,31 @@
 
 The current version of `bias-barometer` is in an early stage of development. But the eventual goal of `bias-barometer` is to provide students and researchers with a unified toolbox for developing and evaluating bias measures for natural language processing (NLP).
 
+## Install bias-barometer
+Clone `bias-barometer` and install using `poetry` or `pip`. 
+Make sure you have installed at least python3.9.
+
+<details>
+  <summary>Using poetry</summary>
+  ```
+    cd bias-barometer
+    poetry install
+  ```
+</details>
+
+<details>
+  <summary>Using pip and venv</summary>
+  ```
+    cd bias-barometer
+    # Create a virtual environment
+    python3.9 -m venv .venv
+    # Load the environment
+    source .venv/bin/activate
+    # Install using pip
+    pip install .
+  ```
+</details>
+
 ## Quick start
 Check `notebooks/examples.ipynb`.
 
