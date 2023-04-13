@@ -31,7 +31,45 @@ Make sure you have installed at least python3.9.
 </details>
 
 ## Quick start
-Check `notebooks/examples.ipynb`.
+<details>
+  <summary>Evaluate GloVe static word embeddings</summary>
+```
+from biasbarometer.barometers import AutoBarometer
+from biasbarometer.models import WordEmbeddingsModel
+
+# Initialize the embedding representation from a GloVe model
+embedding = WordEmbeddingsModel("glove-twitter-25").get_representation("embedding")
+
+# Operationalize the Bias Direction using two wordlists
+barometer = AutoBarometer.from_spec("direction", wordpairs="../data/wordlists/man_vs_woman.csv", target="../data/wordlists/occupations.txt")
+
+# Run the bias evaluation
+barometer.evaluate(embedding)
+
+barometer.results["bias_df"]
+```
+</details>
+
+<details>
+  <summary>Evaluate distilBERT using STS-B</summary>
+```
+from biasbarometer.barometers import AutoBarometer
+from biasbarometer.models import BERTModel
+
+# Initialize the sentence embedding representation from a GloVe model
+sentence_embeddings = BERTModel("distilbert-base-uncased").get_representation("sentence embedding")
+
+# Operationalize the STS-B bias measure using occupation target list and the template list
+barometer = AutoBarometer.from_spec("sts-b", target="../data/wordlists/occupations.txt", templates="../data/templates/sts-b.txt")
+
+# Run the bias evaluation
+barometer.evaluate(sentence_embeddings)
+
+barometer.results["bias_df"]
+```
+</details>
+
+Check `notebooks/examples.ipynb` for more.
 
 ## Overview
 At the center of `bias-barometer` are the `barometers`, which are implementations of bias measures. Each `barometer` is designed for a model `representation`: For example, the **Bias Direction** (e.g., Bolukbasi et al., 2016) measures the bias in a *word embedding*, which can be obtained from e.g. word2vec or the input embeddings of a BERT model. 
