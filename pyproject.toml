@@ -1,0 +1,29 @@
+[tool.poetry]
+name = "bias-barometer"
+version = "0.1.0"
+description = "Tools for measuring social biases in language models and word embeddings."
+authors = ["Oskar van der Wal <o.d.vanderwal@gmail.com>"]
+license = "MIT"
+readme = "README.md"
+packages = [{include = "biasbarometer"}]
+
+[tool.poetry.scripts]
+barometer = 'scripts.barometer:run'
+
+[tool.poetry.dependencies]
+python = "^3.10"
+pandas = "^2.0.0"
+simple-parsing = "<0.1.0"
+gensim = "^4.3.1"
+torch = "^2.0.0"
+transformers = "^4.27.4"
+scikit-learn = "^1.2.2"
+tabulate = "^0.9.0"
+ipywidgets = "^8.0.6"
+
+[tool.poetry.group.dev.dependencies]
+ipykernel = "^6.22.0"
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
