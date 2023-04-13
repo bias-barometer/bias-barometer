@@ -11,7 +11,8 @@ Make sure you have installed at least python3.9.
 
 <details>
   <summary>Using poetry</summary>
-  ```
+
+  ```bash
     cd bias-barometer
     poetry install
   ```
@@ -19,7 +20,8 @@ Make sure you have installed at least python3.9.
 
 <details>
   <summary>Using pip and venv</summary>
-  ```
+
+  ```bash
     cd bias-barometer
     # Create a virtual environment
     python3.9 -m venv .venv
@@ -33,7 +35,8 @@ Make sure you have installed at least python3.9.
 ## Quick start
 <details>
   <summary>Evaluate GloVe static word embeddings</summary>
-```
+
+```python
 from biasbarometer.barometers import AutoBarometer
 from biasbarometer.models import WordEmbeddingsModel
 
@@ -52,7 +55,8 @@ barometer.results["bias_df"]
 
 <details>
   <summary>Evaluate distilBERT using STS-B</summary>
-```
+
+```python
 from biasbarometer.barometers import AutoBarometer
 from biasbarometer.models import BERTModel
 
