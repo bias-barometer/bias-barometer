@@ -51,6 +51,8 @@ barometer.evaluate(embedding)
 
 barometer.results["bias_df"]
 ```
+
+`glove-twitter-25` is only one of the models made available by Gensim that can be loaded using `WordEmbeddingsModel`; See for a complete list the [Gensim-data repository](https://github.com/RaRe-Technologies/gensim-data#models).
 </details>
 
 <details>
