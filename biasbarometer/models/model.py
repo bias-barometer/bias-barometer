@@ -2,6 +2,7 @@ from abc import ABC, abstractmethod
 
 import gensim
 import gensim.downloader
+from gensim.models import FastText
 import torch
 from transformers import AutoTokenizer, AutoConfig, AutoModelForMaskedLM
 from transformers import logging as tf_logging
@@ -10,6 +11,7 @@ import logging
 from biasbarometer.models import (
     Embedding,
     SentenceEmbedding,
+    CharacterEmbedding,
 )
 
 from biasbarometer.config import ModelConfig
@@ -149,9 +151,14 @@ class WordEmbeddingsModel(Model):
     def load_model(self, model_fp, name_is_filepath=False):
         # TODO: maybe there is a more straightforward way to load a static word embedding in gensim?
         if name_is_filepath:
-            self.model = gensim.models.KeyedVectors.load_word2vec_format(
-                model_fp, binary=True
-            )
+            try:
+                self.model = gensim.models.KeyedVectors.load(
+                    model_fp
+                )
+            except:
+                self.model = gensim.models.KeyedVectors.load_word2vec_format(
+                    model_fp, binary=True
+                )
         else:
             self.model = gensim.downloader.load(model_fp)
         weights = torch.FloatTensor(self.model.vectors)
@@ -169,4 +176,31 @@ class WordEmbeddingsModel(Model):
     def get_embedding(self):
         if not self.embedding:
             self.embedding = Embedding(self.model_, self.w2i)
+        return self.embedding
+
+class CharacterEmbeddingsModel(Model):
+    def __init__(self, model_fp, **kwargs):
+        super().__init__(**kwargs)
+        self.model_ = None
+        self.embedding = None
+        self.load_model(model_fp)
+        self.representations = "character embedding"
+
+    def load_model(self, model_fp):
+        # TODO: maybe there is a more straightforward way to load a static word embedding in gensim?
+        self.model = FastText.load(
+                model_fp
+            )
+
+    def get_representation(self, representation):
+        if representation == "embedding":
+            return self.get_embedding()
+        else:
+            raise ValueError(
+                f"{representation} is not a supported representation for this model."
+            )
+
+    def get_embedding(self):
+        if not self.embedding:
+            self.embedding = CharacterEmbedding(self.model)
         return self.embedding

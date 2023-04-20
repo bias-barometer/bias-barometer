@@ -1,2 +1,2 @@
-from .representation import Embedding, SentenceEmbedding
-from .model import Model, WordEmbeddingsModel, BERTModel
+from .representation import Embedding, SentenceEmbedding, CharacterEmbedding
+from .model import Model, WordEmbeddingsModel, BERTModel, CharacterEmbeddingsModel

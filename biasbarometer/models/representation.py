@@ -53,6 +53,34 @@ class Embedding(Representation):
         word_vectors = self.model(w_tok).detach().squeeze().cpu().numpy()
         return word_vectors
 
+class CharacterEmbedding(Representation):
+    """The Character Embedding Representation returns a vector representation for a given word when called."""
+
+    def __init__(self, model, **kwargs):
+        """
+        Args:
+            model:
+                FastText model.
+        """
+        super().__init__(**kwargs)
+        self.model = model
+
+    def __call__(self, words):
+        """Returns the vector representation for the words if available."""
+        # If words is a string, make it a list
+        words = [words] if isinstance(words, str) else words
+
+        # We first check if the words are part of the vocabulary
+        word_vectors = []
+        for word in words:
+            if self.lowercase:
+                word = word.lower()
+            try:
+                word_vectors.append(self.model.wv[word])
+            except:
+                raise ValueError(f"{word} is not part of the vocabulary.")
+        return np.stack(word_vectors).squeeze()
+
 
 class SentenceEmbedding(ABC):
     def __init__(
