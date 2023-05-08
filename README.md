@@ -23,9 +23,9 @@ Make sure you have installed at least python3.9.
 
   ```bash
     cd bias-barometer
-    # Create a virtual environment
-    python3.9 -m venv .venv
-    # Load the environment
+    # Create a virtual environment (optional)
+    python -m venv .venv # or use python3.9
+    # Load the environment (optional)
     source .venv/bin/activate
     # Install using pip
     pip install .
