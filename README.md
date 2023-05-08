@@ -84,7 +84,7 @@ Each `barometer` requires some dataset or wordlist to operationalize the bias: F
 
 ### Terminology
 - A `barometer` measures some bias in a certain representation; generally it needs a dataset or wordlist to operationalize this bias.
-- A `model` is a 'wrapper' for either a word embedding (e.g., word2vec provided by gensim) or a language model (e.g., BERT provided by transformers).
+- A `model` is a 'wrapper' for either a static embedding model (e.g., word2vec provided by gensim) or a contextual language model (e.g., BERT provided by 🤗transformers).
 - A `representation` is part of a model where we can measure the bias (e.g., word embeddings or sentence embeddings).
 
 ## Implement your own barometer
