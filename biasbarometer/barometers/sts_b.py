@@ -10,7 +10,7 @@ from tqdm import tqdm
 from biasbarometer.barometers import AutoBarometer
 from biasbarometer.data import STSBDataset
 from biasbarometer.config import STSBConfig
-from biasbarometer.models import SentenceEmbedding
+from biasbarometer.models import SentenceEmbeddings
 
 
 class STS_B(AutoBarometer):
@@ -26,7 +26,7 @@ class STS_B(AutoBarometer):
     def get_similarity(target, group):
         return torch.nn.functional.cosine_similarity(target, group).cpu()
 
-    def evaluate(self, sentence_embedding: SentenceEmbedding) -> None:
+    def evaluate(self, sentence_embedding: SentenceEmbeddings) -> None:
         templates = STSBDataset(
             template_fp=self.config["templates"], target_fp=self.config["target"]
         )

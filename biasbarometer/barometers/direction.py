@@ -6,7 +6,7 @@ import logging
 from biasbarometer.barometers import AutoBarometer
 from biasbarometer.data import WordList
 from biasbarometer.config import BiasDirectionConfig
-from biasbarometer.models import Embedding
+from biasbarometer.models import StaticEmbeddings
 
 
 class ClassificationNormalBiasDirection:
@@ -77,7 +77,7 @@ class BiasDirection(AutoBarometer):
     def get_config_class():
         return BiasDirectionConfig
 
-    def evaluate(self, embedding: Embedding) -> None:
+    def evaluate(self, embedding: StaticEmbeddings) -> None:
         targetlist = WordList.from_file(self.config["target"], pairs=False)
         pairlist = WordList.from_file(self.config["wordpairs"], pairs=True)
 
@@ -104,6 +104,13 @@ class BiasDirection(AutoBarometer):
             except ValueError:
                 logging.warning(
                     f"Target word {word} is not part of the embedding vocabulary and is therefore skipped."
+                )
+                bias_df_words.append(
+                    {
+                        "word": word,
+                        "score": np.nan,
+                        "category": targetlist.get_category_word(word),
+                    }
                 )
 
         for word in pairlist:

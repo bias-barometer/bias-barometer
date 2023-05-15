@@ -21,6 +21,8 @@ scikit-learn = "^1.2.2"
 tabulate = "^0.9.0"
 ipywidgets = "^8.0.6"
 datasets = "^2.11.0"
+pybind11 = "^2.10.4"
+fasttext = {git = "https://github.com/cfculhane/fastText"}
 
 [tool.poetry.group.dev.dependencies]
 ipykernel = "^6.22.0"
