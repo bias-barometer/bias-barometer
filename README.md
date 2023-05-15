@@ -38,10 +38,10 @@ Make sure you have installed at least python3.9.
 
 ```python
 from biasbarometer.barometers import AutoBarometer
-from biasbarometer.models import WordEmbeddingsModel
+from biasbarometer.models import GloVeEmbeddingsModel
 
 # Initialize the embedding representation from a GloVe model
-embedding = WordEmbeddingsModel("glove-twitter-25").get_representation("embedding")
+embedding = GloVeEmbeddingsModel("glove-twitter-25").embeddings
 
 # Operationalize the Bias Direction using two wordlists
 barometer = AutoBarometer.from_spec("direction", wordpairs="../data/wordlists/man_vs_woman.csv", target="../data/wordlists/occupations.txt")
@@ -52,7 +52,7 @@ barometer.evaluate(embedding)
 barometer.results["bias_df"]
 ```
 
-`glove-twitter-25` is only one of the models made available by Gensim that can be loaded using `WordEmbeddingsModel`; See for a complete list the [Gensim-data repository](https://github.com/RaRe-Technologies/gensim-data#models).
+`glove-twitter-25` is only one of the models made available by Gensim that can be loaded using `GloveEmbeddingsModel`; See for a complete list the [Gensim-data repository](https://github.com/RaRe-Technologies/gensim-data#models).
 </details>
 
 <details>
@@ -63,7 +63,7 @@ from biasbarometer.barometers import AutoBarometer
 from biasbarometer.models import BERTModel
 
 # Initialize the sentence embedding representation from a GloVe model
-sentence_embeddings = BERTModel("distilbert-base-uncased").get_representation("sentence embedding")
+sentence_embeddings = BERTModel("distilbert-base-uncased").sentence_embeddings
 
 # Operationalize the STS-B bias measure using occupation target list and the template list
 barometer = AutoBarometer.from_spec("sts-b", target="../data/wordlists/occupations.txt", templates="../data/templates/sts-b.txt")
