@@ -2,7 +2,7 @@
 name = "bias-barometer"
 version = "0.1.0"
 description = "Tools for measuring social biases in language models and word embeddings."
-license = "MIT"
+license = {text = "MIT License"}
 readme = "README.md"
 packages = [{include = "biasbarometer"}]
 requires-python = ">=3.9"
