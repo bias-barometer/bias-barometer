@@ -4,7 +4,7 @@ import gensim
 import gensim.downloader
 import fasttext
 import torch
-from transformers import AutoTokenizer, AutoConfig, AutoModelForMaskedLM
+from transformers import AutoTokenizer, AutoConfig, AutoModelForMaskedLM, GPTNeoXForCausalLM
 from transformers import logging as tf_logging
 import logging
 
@@ -53,7 +53,8 @@ class Model(ABC):
 
         # Initialize possible representations as None
         self._sentence_embeddings = None
-        self._embeddings = None
+        self._embeddings = None 
+        #self._representations = [self.embeddings, self.sentence_embeddings]
 
     @property
     def embeddings(self):
@@ -94,7 +95,7 @@ class BERTModel(Model):
         self.load_model(model_fp)
 
     @staticmethod
-    def get_bert(model_fp: str, tokenizer_fp: str = None, config_fp: str = None):
+    def get_bert(model_fp: str, tokenizer_fp: str = None, config_fp: str = None, device: str = "cpu"):
         """Helper function for loading a 🤗 Transformers BERT model from disk or the Hugging Face hub.
 
         Examples for model_fp are bert-base-uncased, pdelobelle/robbert-v2-dutch-base, and GroNLP/bert-base-dutch-cased
@@ -112,7 +113,12 @@ class BERTModel(Model):
         config.output_scores = True
         tokenizer_fp = tokenizer_fp or model_fp
         tokenizer = AutoTokenizer.from_pretrained(tokenizer_fp)
-        bert = AutoModelForMaskedLM.from_pretrained(model_fp, config=config)
+        bert = AutoModelForMaskedLM.from_pretrained(
+            model_fp, 
+            config=config,
+            low_cpu_mem_usage=True, # https://huggingface.co/docs/transformers/main_classes/model#large-model-loading
+            device_map=device,
+        )
         bert.eval()
         return bert, tokenizer
 
@@ -125,7 +131,7 @@ class BERTModel(Model):
         Raises:
             NotImplementedError: Raised if the base model without the language modeling head cannot be found.
         """        
-        self.model, self.tokenizer = self.get_bert(model_fp)
+        self.model, self.tokenizer = self.get_bert(model_fp, device = self._device)
 
         # Get model without language modeling head on top
         if hasattr(self.model, "bert"):
@@ -137,7 +143,7 @@ class BERTModel(Model):
         else:
             raise NotImplementedError("Cannot find base model without language modeling head for this model.")
 
-        self.model = self.model.to(self.device)
+        #self.model = self.model.to(self.device)
 
     @property
     def sentence_embeddings(self) -> SentenceEmbeddings:
@@ -247,6 +253,107 @@ class Word2VecEmbeddingsModel(Model):
         """
         if not self._embeddings:
             self._embeddings = WordEmbeddings(self.model_, self.w2i)
+        return self._embeddings
+
+# class FastTextEmbeddingsModel(Model):
+#     """Wrapper class for FastText embeddings models."""
+#     def __init__(self, model_fp: str, **kwargs) -> None:
+#         """Initializes the FastText model.
+
+#         Args:
+#             model_fp (str): File path to saved the FastText model.
+#         """        
+#         super().__init__(**kwargs)
+#         self.load_model(model_fp)
+
+#     def load_model(self, model_fp: str) -> None:
+#         """Load FastText model from filepath.
+
+#         Args:
+#             model_fp (str): Filepath of the model.
+#         """
+#         self.model = fasttext.load_model(model_fp)
+
+#     @property
+#     def embeddings(self) -> CharacterEmbeddings:
+#         """Property defining the static embeddings for this model.
+
+#         Returns:
+#             CharacterEmbeddings: Static word embeddings derived from this model.
+#         """
+#         if not self._embeddings:
+#             self._embeddings = CharacterEmbeddings(self.model)
+#         return self._embeddings
+
+class PythiaModel(Model):
+    def __init__(self, model_fp, step=3000, **kwargs):
+        #self.name = f"pythia_70M_{step}"
+        #self.unk = "[UNK]" #TODO
+        #self.pad_token = "[PAD]" #TODO
+
+        super().__init__(**kwargs)
+        self.step = step
+        self.architecture = "pythia"
+        self.load_model(model_fp)
+
+    @staticmethod
+    def get_pythia(model_fp, step, config_fp=None):
+        """
+        TODO
+        """
+        tokenizer = AutoTokenizer.from_pretrained(
+            model_fp, #"EleutherAI/pythia-70m-deduped",
+            revision=f"step{step}",
+            cache_dir=f"./{model_fp.split('/')[1]}/step{step}",
+            #cache_dir=f"./pythia-70m-deduped/step{step}",
+            )
+        # TODO
+        model = GPTNeoXForCausalLM.from_pretrained(
+                    model_fp, #"EleutherAI/pythia-70m-deduped",
+                    revision=f"step{step}",
+                    cache_dir=f"./{model_fp.split('/')[1]}/step{step}",
+                    low_cpu_mem_usage=True,
+                    #cache_dir=f"./pythia-70m-deduped/step{step}",
+                    )
+        model.eval()
+        return model, tokenizer
+
+    def load_model(self, model):
+        self.model, self.tokenizer = self.get_pythia(model, self.step)
+        self.model_ = self.model.gpt_neox
+        self.w2i = self.tokenizer.vocab
+        self.vocab = self.w2i # Necessary for attribution-bias
+        self.model = self.model.to(self.device)
+
+    @property
+    def sentence_embeddings(self) -> SentenceEmbeddings:
+        """Property defining the sentence embeddings for this model.
+
+        Returns:
+            SentenceEmbeddings: Sentence embeddings derived from this model.
+        """
+        if not self._sentence_embeddings:
+            self._sentence_embeddings = SentenceEmbeddings.from_model(
+                self.architecture,
+                model=self.model,
+                tokenizer=self.tokenizer,
+                return_representation="cls",
+            )
+        return self._sentence_embeddings
+
+    @property
+    def embeddings(self) -> WordEmbeddings:
+        """Property defining the static embeddings for this model.
+
+        Returns:
+            WordEmbeddings: Static word embeddings derived from this model, which are the input embeddings.
+        """
+        if not self._embeddings:
+            self._embeddings = WordEmbeddings(
+                self.model_.get_input_embeddings(),
+                self.tokenizer.vocab,
+                device=self.device,
+            )
         return self._embeddings
 
 class FastTextEmbeddingsModel(Model):

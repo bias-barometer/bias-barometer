@@ -1,10 +1,11 @@
 from abc import ABC, abstractmethod
 import torch
 import numpy as np
-from fasttext import _FastText
-from transformers import PretrainedModel, PreTrainedTokenizer, BertModel, BertTokenizer
+#from fasttext import FastText
+from transformers import PreTrainedModel, PreTrainedTokenizer, BertModel, BertTokenizer
+from fasttext import FastText
 
-from collections.abs import Iterable
+from collections.abc import Iterable
 
 class Representation(ABC):
     """This is an abstract class for a model representation, which is a possible location for measuring the bias using a barometer."""
@@ -23,6 +24,10 @@ class Representation(ABC):
         self.device = device or torch.device("cpu")
         self.lowercase = lowercase
 
+    @classmethod
+    def display_name(self):
+        return "abstract representation"
+
     @abstractmethod
     def __call__(self):
         pass
@@ -31,6 +36,10 @@ class StaticEmbeddings(Representation):
     """Super class for word embeddings and character embeddings."""
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
+
+    @classmethod
+    def display_name(self):
+        return "static embeddings"
 
 class WordEmbeddings(StaticEmbeddings):
     """The WordEmbeddings Representation returns a vector representation for a given word when called."""
@@ -46,6 +55,10 @@ class WordEmbeddings(StaticEmbeddings):
         self.vocab = vocab
         self.model = model
 
+    @classmethod
+    def display_name(self):
+        return "word embeddings"
+
     def __call__(self, words: Iterable[str] | str):
         """Returns the vector representation for the word(s) if possible.
 
@@ -53,7 +66,7 @@ class WordEmbeddings(StaticEmbeddings):
             words (Iterable[str] | str): Word(s) for which to find the vector representation(s).
 
         Raises:
-            ValueError: If the word is not part of the vocabulary.
+            ValueError: if the word is not part of the vocabulary.
 
         Returns:
             np.ndarray: Array representing the word vectors.
@@ -79,15 +92,15 @@ class WordEmbeddings(StaticEmbeddings):
         w_tok = torch.LongTensor([tokens]).to(self.device)
         word_vectors = self.model(w_tok).detach().squeeze().cpu().numpy()
         return word_vectors
-
+    
 class CharacterEmbeddings(StaticEmbeddings):
     """The Character Embedding Representation returns a vector representation for a given word when called."""
 
-    def __init__(self, model: _FastText, **kwargs):
+    def __init__(self, model: FastText, **kwargs):
         """Initializes the character embeddings representation for a FastText model.
 
         Args:
-            model (_FastText): FastText model.
+            model (FastText): FastText model.
         """        
         super().__init__(**kwargs)
         self.model = model
@@ -118,12 +131,50 @@ class CharacterEmbeddings(StaticEmbeddings):
                 raise ValueError(f"{word} is not part of the vocabulary.")
         return np.stack(word_vectors).squeeze()
 
+# class CharacterEmbeddings(StaticEmbeddings):
+#     """The Character Embedding Representation returns a vector representation for a given word when called."""
+
+#     def __init__(self, model: FastText, **kwargs):
+#         """Initializes the character embeddings representation for a FastText model.
+
+#         Args:
+#             model (FastText): FastText model.
+#         """        
+#         super().__init__(**kwargs)
+#         self.model = model
+
+#     def __call__(self, words: Iterable[str] | str):
+#         """Returns the vector representation(s) for the word(s) if available.
+
+#         Args:
+#             words (Iterable[str] | str): A word or list of words to encode.
+
+#         Raises:
+#             ValueError: if the word is not part of the model's vocabulary.
+
+#         Returns:
+#             np.ndarray: Array representing the word vectors.
+#         """        
+#         # If words is a string, make it a list
+#         words = [words] if isinstance(words, str) else words
+
+#         # We first check if the words are part of the vocabulary
+#         word_vectors = []
+#         for word in words:
+#             if self.lowercase:
+#                 word = word.lower()
+#             try:
+#                 word_vectors.append(self.model[word])
+#             except:
+#                 raise ValueError(f"{word} is not part of the vocabulary.")
+#         return np.stack(word_vectors).squeeze()
+
 
 class SentenceEmbeddings(Representation):
     """Super class for representing sentence embeddings."""
     def __init__(
         self,
-        model: PretrainedModel,
+        model: PreTrainedModel,
         tokenizer: PreTrainedTokenizer,
         **kwargs,
     ) -> None:
@@ -139,6 +190,10 @@ class SentenceEmbeddings(Representation):
         assert self.model
         assert self.tokenizer
         self.device = model.device
+
+    @classmethod
+    def display_name(self):
+        return "sentence embeddings"
 
     @classmethod
     def from_model(cls, model_architecture: str, **kwargs):
@@ -188,6 +243,10 @@ class MaskedSentenceEmbeddings(SentenceEmbeddings):
         """    
         super().__init__(model, tokenizer, **kwargs)
         self.return_representation = return_representation
+
+    @classmethod
+    def display_name(self):
+        return "masked sentence embeddings"
 
     def __call__(self, sentences: Iterable[str]):
         """Creates sentence embeddings using the BERT model for the list of sentences passed to it.
