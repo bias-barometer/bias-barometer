@@ -3,18 +3,17 @@
 
 ⚠ Please be aware that `bias-barometer` is intended for educational and research purposes only! It is crucial that the validity and reliability of a bias measure is tested before it can be used to make any claims about the bias of an NLP system. In fact, many bias measures have shown poor validity and reliability (in certain use-cases).
 
-The current version of `bias-barometer` is in an early stage of development. But the eventual goal of `bias-barometer` is to provide students and researchers with a unified toolbox for developing and evaluating bias measures for natural language processing (NLP).
-
 ## Install bias-barometer
-Clone `bias-barometer` and install using `poetry` or `pip`. 
+Clone `bias-barometer` and install using `uv` or `pip`. 
 Make sure you have installed at least python3.9.
 
 <details>
-  <summary>Using poetry</summary>
+  <summary>Using uv</summary>
 
   ```bash
     cd bias-barometer
-    poetry install
+    uv venv --python 3.10 # or another version
+    uv sync
   ```
 </details>
 
@@ -23,9 +22,8 @@ Make sure you have installed at least python3.9.
 
   ```bash
     cd bias-barometer
-    # Create a virtual environment (optional)
-    python -m venv .venv # or use python3.9
-    # Load the environment (optional)
+    # Create and load a virtual environment (optional)
+    python -m venv .venv # or use e.g. python3.10
     source .venv/bin/activate
     # Install using pip
     pip install .
@@ -78,7 +76,7 @@ barometer.results["bias_df"]
 Check `notebooks/examples.ipynb` for more.
 
 ## Overview
-At the center of `bias-barometer` are the `barometers`, which are implementations of bias measures. Each `barometer` is designed for a model `representation`: For example, the **Bias Direction** (e.g., Bolukbasi et al., 2016) measures the bias in a *word embedding*, which can be obtained from e.g. word2vec or the input embeddings of a BERT model. 
+At the center of `bias-barometer` are the `barometers`, which are implementations of bias measures. Each `barometer` is designed for a model `representation`: For example, the **Bias Direction** (e.g., Bolukbasi et al., 2016) measures the bias in *word embeddings*, which can be obtained from e.g. word2vec or the input embeddings of a BERT model.
 
 Each `barometer` requires some dataset or wordlist to operationalize the bias: For example, to measure gender bias for occupations, the **Bias Direction** needs a set of masculine vs. feminine words (*wordpairs*) and a list of occupation terms (*target*) in the language of interest. See [Orgad & Belinkov (2022)](https://aclanthology.org/2022.gebnlp-1.17/) for why it is a good idea to separate the dataset from the metric/task.
 
@@ -90,14 +88,16 @@ Each `barometer` requires some dataset or wordlist to operationalize the bias: F
 ## Implement your own barometer
 **TODO**
 
-## Roadmap
+## Possible roadmap
 - [ ] Add documentation on how to use and implement new barometers.
+- [ ] Incorporate [lm-evaluation-harness](https://github.com/EleutherAI/lm-evaluation-harness) for evaluating models on bias benchmarks.
 - [ ] Implement more `barometers` for different model types as well as interventions (e.g. "model debiasing" or doing an ablation study with wordlists).
+- [ ] Implement `barometers` for textual data.
 - [ ] Help researchers to assess the reliability and validity of different bias measures.
 - [ ] Accomodate the analysis of model suites (e.g., to compare models across different sizes) and checkpoints (e.g., to study the training dynamics).
 
 ## Similar projects
-- [AllenNLP](https://github.com/allenai/allennlp) had implemented various fairness related metrics, including the [bias direction](https://docs.allennlp.org/main/api/fairness/bias_direction/), and has been an important inspiration to this code; However, this library has been archived.
-- [WEFE](https://github.com/dccuchile/wefe): The Word Embedding Fairness Evaluation Framework also aspires to provide a unified framework and focuses on measuring and mitigating bias in word embedding models.
-- [🤗 Evaluate](https://github.com/huggingface/evaluate) also implements some bias metrics.
-- [LM-Eval-Harness](https://github.com/EleutherAI/lm-evaluation-harness) also implemented some bias metrics; Leverages prompt-source for prompt-based (bias) evaluations.
+- [AllenNLP](https://github.com/allenai/allennlp) (now deprecated) implements various fairness related metrics, including the [bias direction](https://docs.allennlp.org/main/api/fairness/bias_direction/), and has been an important inspiration for this code; However, this library has been archived.
+- [WEFE](https://github.com/dccuchile/wefe): The Word Embedding Fairness Evaluation Framework aspires to provide a unified framework and focuses on measuring and mitigating bias in word embedding models.
+- [🤗 Evaluate](https://github.com/huggingface/evaluate) implements some bias metrics.
+- [LM-Eval-Harness](https://github.com/EleutherAI/lm-evaluation-harness) includes some bias benchmarks for autoregressive language models.
